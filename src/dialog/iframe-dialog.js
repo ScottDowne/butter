@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
+
 define( [
           "core/comm", 
           "core/eventmanager",
@@ -84,6 +88,12 @@ define( [
         });
       }, false );
       _parent.appendChild( _iframe );
+
+      // need to wait an event-loop cycle to apply this class
+      // ow, opacity transition fails to render
+      setTimeout( function(){
+        _iframe.className += " fade-in";
+      }, 10 );
     }; //open
 
     this.send = function( type, data ){

@@ -1,28 +1,19 @@
-/**********************************************************************************
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
-Copyright (C) 2011 by Mozilla Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-**********************************************************************************/
-
-define( [ "core/logger", "core/eventmanager", "core/trackevent" ], function( Logger, EventManager, TrackEvent ) {
+define( [
+          "./logger",
+          "./eventmanager",
+          "./trackevent",
+          "./views/track-view"
+        ],
+        function(
+          Logger,
+          EventManager,
+          TrackEvent,
+          TrackView
+        ){
 
   var __guid = 0;
 
@@ -36,9 +27,17 @@ define( [ "core/logger", "core/eventmanager", "core/trackevent" ], function( Log
         _em = new EventManager( this ),
         _name = options.name || _id,
         _order = options.order || 0,
+        _view = new TrackView( this ),
         _this = this;
 
     Object.defineProperties( this, {
+      view: {
+        enumerable: true,
+        configurable: false,
+        get: function(){
+          return _view;
+        }
+      },
       order: {
         enumerable: true,
         get: function(){
@@ -145,6 +144,7 @@ define( [ "core/logger", "core/eventmanager", "core/trackevent" ], function( Log
         "trackeventdeselected",
         "trackeventeditrequested"
       ]);
+      _view.addTrackEvent( trackEvent );
       trackEvent.track = _this;
       _em.dispatch( "trackeventadded", trackEvent );
       return trackEvent;
@@ -161,12 +161,21 @@ define( [ "core/logger", "core/eventmanager", "core/trackevent" ], function( Log
           "trackeventdeselected",
           "trackeventeditrequested"
         ]);
+        _view.removeTrackEvent( trackEvent );
         trackEvent.track = undefined;
         _em.dispatch( "trackeventremoved", trackEvent );
         return trackEvent;
       } //if
 
     }; //removeEvent
+
+    this.deselectEvents = function( except ){
+      for( var i=0, l=_trackEvents.length; i<l; ++i ){
+        if( _trackEvents[ i ] !== except ){
+          _trackEvents[ i ].selected = false;
+        } //if
+      } //for
+    }; //deselectEvents
 
   }; //Track
 

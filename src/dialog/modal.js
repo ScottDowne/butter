@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
+
 define( [], function(){
 
   var __container;
@@ -13,13 +17,19 @@ define( [], function(){
     var _element = document.createElement( "div" ),
         _this = this;
 
-    if( state && typeof( state ) === "string" ){
-      _element.setAttribute( "state", state );
-    } //if
-
     _element.className = "layer";
 
+    if( state && typeof( state ) === "string" ){
+      _element.className += state;
+    } //if
+
     __container.appendChild( _element );
+
+    // need to wait an event-loop cycle to apply this class
+    // ow, opacity transition fails to render
+    setTimeout( function(){
+      _element.className += " fade-in";
+    }, 10 );
 
     this.destroy = function(){
       __container.removeChild( _element );

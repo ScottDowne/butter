@@ -1,26 +1,6 @@
-/**********************************************************************************
-
-Copyright (C) 2012 by Mozilla Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-**********************************************************************************/
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
 #butter-timeline, #butter-timeline * {
   -webkit-touch-callout: none;
@@ -47,9 +27,17 @@ THE SOFTWARE.
   background-color: #fff;
   border: 10px solid #000;
   border-radius: 20px;
+  opacity: 0;
 }
 
-#butter-modal-container .layer[ state="behind-timeline" ] {
+#butter-modal-container .layer.fade-in, #butter-modal-container .layer iframe.fade-in {
+  opacity: 1;
+  -moz-transition: opacity 0.5s;
+  -webkit-transition: opacity 0.5s;
+  transition: opacity 0.5s;
+}
+
+#butter-modal-container .layer.behind-timeline {
   z-index: 2139000000;
 }
 
@@ -61,6 +49,7 @@ THE SOFTWARE.
   height: 100%;
   background: rgba( 0, 0, 0, 0.7 );
   position: fixed;
+  opacity: 0;
 }
 
 #butter-timeline {
@@ -69,12 +58,12 @@ THE SOFTWARE.
   bottom: 0px;
   left: 0px;
   width: 100%;
-  height: 300px;
+  height: 210px;
   border: 1px solid #000;
   background-image: url( "assets/bg.jpg" );
-  -moz-transition: bottom 0.5s;
-  -webkit-transition: bottom 0.5s;
-  transition: bottom 0.5s;
+  -moz-transition: bottom 0.35s;
+  -webkit-transition: bottom 0.35s;
+  transition: bottom 0.35s;
 }
 
 .butter-highlight {
@@ -102,7 +91,7 @@ THE SOFTWARE.
   position: absolute;
   width: 100px;
   height: 40px;
-  top: -45px;
+  top: -50px;
   left: -115px;
 }
 
@@ -210,7 +199,7 @@ THE SOFTWARE.
 
 #butter-timeline .mute-button-container {
   position: absolute;
-  top: -40px;
+  top: -50px;
   right: -30px;
   width: 17px;
   height: 17px;
@@ -270,16 +259,11 @@ THE SOFTWARE.
 
 #butter-timeline .track-handle-container {
   position: absolute;
-  height: 185px;
-  width: 100px;
+  height: 140px;
+  width: 110px;
   left: 5px;
+  top: 55px;
   bottom: 18px;
-  border: 1px solid #2B2B2B;
-  border-image: initial;
-  border-radius: 5px;
-  moz-border-radius: 5px;
-  o-border-radius: 5px;
-  webkit-border-radius: 5px;
   overflow: hidden;
 }
 
@@ -306,15 +290,14 @@ THE SOFTWARE.
   position: relative;
   background-image: -moz-linear-gradient(center bottom,#1c1c1c 0,#2a2a2a 100%);
   background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0,#1c1c1c),color-stop(1,#2a2a2a));
-  border: 1px solid #111;
   color: #666;
   font: 10px/25px Arial,Helvetica,sans-serif;
-  height: 25px;
+  height: 28px;
   margin-bottom: 6px;
-  box-shadow: 0 1px 0 #737373,inset 0 1px 0 #414141;
-  moz-box-shadow: 0 1px 0 #737373,inset 0 1px 0 #414141;
-  o-box-shadow: 0 1px 0 #737373,inset 0 1px 0 #414141;
-  webkit-box-shadow: 0 1px 0 #737373,inset 0 1px 0 #414141;
+  box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 0px 10px 1px rgba( 160, 160, 160, 0.1 ), 1px -1px 1px #101010, -1px -1px 1px #101010;
+  moz-box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 0px 10px 1px rgba( 160, 160, 160, 0.1 ), 1px -1px 1px #101010, -1px -1px 1px #101010;
+  o-box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 0px 10px 1px rgba( 160, 160, 160, 0.1 ), 1px -1px 1px #101010, -1px -1px 1px #101010;
+  webkit-box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 0px 10px 1px rgba( 160, 160, 160, 0.1 ), 1px -1px 1px #101010, -1px -1px 1px #101010;
   text-transform: uppercase;
   text-align: center;
   overflow: hidden;
@@ -438,7 +421,7 @@ THE SOFTWARE.
   top: 12px;
   left: 3px;
   width: 4px;
-  height: 220px;
+  height: 170px;
   cursor: pointer;
   z-index: 2140000000;
 }
@@ -457,7 +440,7 @@ THE SOFTWARE.
 }
 
 #butter-timeline[ ui-state="hidden" ] {
-  bottom: -260px;
+  bottom: -160px;
 }
 
 #butter-timeline #toggle-button {
@@ -468,11 +451,12 @@ THE SOFTWARE.
   border-top-left-radius: 15px;
   position: absolute;
   top: -23px;
-  right: 80px;
+  right: 10px;
   box-shadow: inset 0 -3px 5px #222, 1px -1px 1px #222, -1px -1px 1px #222;
   moz-box-shadow: inset 0 -3px 5px #222, 1px -1px 1px #222, -1px -1px 1px #222;
   o-box-shadow: inset 0 -3px 5px #222, 1px -1px 1px #222, -1px -1px 1px #222;
   webkit-box-shadow: inset 0 -3px 5px #222, 1px -1px 1px #222, -1px -1px 1px #222;
+  z-index: -1;
 }
 
 #butter-timeline #toggle-button:hover {
@@ -505,7 +489,7 @@ THE SOFTWARE.
   background-image: -moz-linear-gradient( center bottom, #2c2c2c 0, #4c4c4c 100% );
   background-image: -webkit-gradient( linear, left bottom, left top, color-stop( 0, #2c2c2c ), color-stop( 1, #4c4c4c ) );
   position: absolute;
-  height: 40px;
+  height: 50px;
   top: 0px;
   left: 0px;
   width: 100%;
@@ -517,12 +501,14 @@ THE SOFTWARE.
 }
 
 #butter-status-bar div {
+  display: none;
   margin: 0;
   padding: 0;
   width: 100%;
 }
 
 #butter-status-bar div div {
+  display: none;
   border-radius: 5px;
   moz-border-radius: 5px;
   o-border-radius: 5px;
@@ -547,15 +533,18 @@ THE SOFTWARE.
 }
 
 #butter-status-bar div div:hover {
-  max-width: 400px;
-  width: 400px;
+  display: none;
+  max-width: 300px;
+  width: 300px;
   background: #000;
 }
 
 #butter-status-bar div div .media-url {
+  display: none;
   white-space: nowrap;
   background: transparent;
   font-size: .8em;
+  float:right;
   margin: 0;
   outline: none;
   padding: 0;
@@ -572,10 +561,9 @@ THE SOFTWARE.
 }
 
 #butter-timeline .media-instance {
-  height: 260px;
+  height: 190px;
   padding: 0 150px 0 115px;
   position: relative;
-  top: 40px;
   -moz-user-select: none;
   -webkit-user-select: none;
   -o-user-select: none;
@@ -586,7 +574,7 @@ THE SOFTWARE.
 }
 
 #butter-timeline[ ui-state="hidden" ] .media-instance {
-  top: -7px;
+  top: 0px;
 }
 
 #butter-timeline .media-container {
@@ -594,7 +582,7 @@ THE SOFTWARE.
   top: 55px;
   padding: 0;
   margin: 0;
-  height: 185px;
+  height: 135px;
 }
 
 #butter-timeline .scroll-bar {
@@ -611,20 +599,33 @@ THE SOFTWARE.
 }
 
 #butter-timeline .scroll-handle {
-  height: 100%;
+  height: 8px;
+  top: 1px;
   position: absolute;
-  background: #333;
-  min-width: 10px;
+  background: #777;
   border-radius: 15px;
-  box-shadow: inset 0 -1px 5px #000;
-  moz-box-shadow: inset 0 -1px 5px #000;
-  o-box-shadow: inset 0 -1px 5px #000;
-  webkit-box-shadow: inset 0 -1px 5px #000;
+  box-shadow: inset 0 -1px 1px #000;
+  moz-box-shadow: inset 0 -1px 1px #000;
+  o-box-shadow: inset 0 -1px 1px #000;
+  webkit-box-shadow: inset 0 -1px 1px #000;
+
+}
+
+#butter-timeline .scroll-bar-v .scroll-handle {
+  width: 8px;
+  left: 1px;
+  position: absolute;
+  background: #777;
+  border-radius: 15px;
+  box-shadow: inset 0 -1px 1px #000;
+  moz-box-shadow: inset 0 -1px 1px #000;
+  o-box-shadow: inset 0 -1px 1px #000;
+  webkit-box-shadow: inset 0 -1px 1px #000;
 
 }
 
 #butter-timeline .scroll-handle:hover {
-  background: #345;
+  background: #fff;
   cursor: pointer;
 }
 
@@ -642,7 +643,7 @@ THE SOFTWARE.
   top: 0;
 }
 
-#butter-timeline .tracks-container {
+#butter-timeline .tracks-container-wrapper {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -658,14 +659,7 @@ THE SOFTWARE.
   webkit-border-radius: 5px;
 }
 
-#butter-timeline .tracks-container .trackliner-root {
-  width: 100%;
-  height: 210px;
-  padding: 0px 0px 0px 0px;
-  margin: 0px 0px 0px 0px;
-} 
-
-#butter-timeline .tracks-container .trackliner-container {
+#butter-timeline .tracks-container-wrapper .tracks-container {
   width: 100%;
   position: relative;
   background: transparent;
@@ -675,7 +669,7 @@ THE SOFTWARE.
   padding-bottom: 7px;
 }
 
-#butter-timeline .tracks-container .trackliner-event {
+#butter-timeline .tracks-container .butter-track-event {
   box-shadow: inset 0 9px 0 rgba( 255, 255, 255, 0.5 );
   moz-box-shadow: inset 0 9px 0 rgba( 255, 255, 255, 0.5 );
   o-box-shadow: inset 0 9px 0 rgba( 255, 255, 255, 0.5 );
@@ -693,20 +687,20 @@ THE SOFTWARE.
   cursor: move;
   overflow: hidden;
   display: block;
-  height: 25px;
+  height: 27px;
+  margin-top: 1px;
   line-height: 25px;
   opacity: 0.8;
   position: absolute;
 }
 
-#butter-timeline .tracks-container .trackliner-track {
+#butter-timeline .tracks-container .butter-track {
   width: 100%;
   box-shadow: 0 1px 0 #737373, 0 1px 0 #131313 inset;
   border-radius: 6px;
   moz-border-radius: 6px;
   o-border-radius: 6px;
   webkit-border-radius: 6px;
-  border: 1px solid #111111 !important;
   background-attachment: scroll;
   background-clip: border-box;
   background-color: transparent;
@@ -715,12 +709,16 @@ THE SOFTWARE.
   background-position: 0 0;
   background-repeat: repeat;
   background-size: auto auto;
-  height: 25px;
+  height: 28px;
   margin-bottom: 6px;
   position: relative;
+  box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 1px 1px 6px #000000, inset 1px 3px 1px rgba(0,0,0,0.4), inset 0px -1px 1px rgba(0,0,0,0.6);
+  moz-box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 1px 1px 6px #000000, inset 1px 3px 1px rgba(0,0,0,0.4), inset 0px -1px 1px rgba(0,0,0,0.6);
+  o-box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 1px 1px 6px #000000, inset 1px 3px 1px rgba(0,0,0,0.4), inset 0px -1px 1px rgba(0,0,0,0.6);
+  webkit-box-shadow: 0 1px 0 #737373, inset 0 1px 0 #414141, inset 1px 1px 6px #000000, inset 1px 3px 1px rgba(0,0,0,0.4), inset 0px -1px 1px rgba(0,0,0,0.6);
 }
 
-#butter-timeline .tracks-container .trackliner-event[selected="true"] {
+#butter-timeline .tracks-container .butter-track-event[selected="true"] {
   box-shadow: inset 0 9px 0 rgba( 255, 255, 255, 0.5 ),
               2px 2px 2px rgba( 65, 80, 215, 0.8 ),
               -2px 2px 2px rgba( 65, 80, 215, 0.8 ),
@@ -743,13 +741,13 @@ THE SOFTWARE.
               -2px -2px 2px rgba( 65, 80, 215, 0.8 );
 }
 
-#butter-timeline .tracks-container .trackliner-track .track-title {
+#butter-timeline .tracks-container .butter-track .track-title {
   position: absolute;
   left: 5px;
   top: 50%;
 }
 
-#butter-timeline .trackliner-event .ui-resizable-handle {
+#butter-timeline .butter-track-event .ui-resizable-handle {
   position: absolute;
   height: 100%;
   min-width: 15px;
@@ -757,63 +755,18 @@ THE SOFTWARE.
   background-color: rgba( 255, 255, 255, 0.5 );
 }
 
-#butter-timeline .trackliner-event .ui-resizable-handle:hover {
+#butter-timeline .butter-track-event .ui-resizable-handle:hover {
 }
 
-#butter-timeline .trackliner-event .ui-resizable-e {
+#butter-timeline .butter-track-event .ui-resizable-e {
   border-top-right-radius: 10px;
   border-bottom-right-radius: 10px;
 }
 
-#butter-timeline .trackliner-event .ui-resizable-w {
+#butter-timeline .butter-track-event .ui-resizable-w {
   border-top-left-radius: 10px;
   border-bottom-left-radius: 10px;
 }
-
-#butter-timeline .trackliner-event[butter-trackevent-type="footnote"] {
-  background: #ffff00; /* Old browsers */
-  background: -moz-linear-gradient(top, #ffff00 0%, #c8c800 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffff00), color-stop(100%,#c8c800)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #ffff00 0%,#c8c800 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #ffff00 0%,#c8c800 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #ffff00 0%,#c8c800 100%); /* IE10+ */
-  background: linear-gradient(top, #ffff00 0%,#c8c800 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffff00', endColorstr='#c8c800',GradientType=0 ); /* IE6-9 */
-}
-
-#butter-timeline .trackliner-event[butter-trackevent-type="text"] {
-  background: #00ff00; /* Old browsers */
-  background: -moz-linear-gradient(top, #00ff00 0%, #00c100 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#00ff00), color-stop(100%,#00c100)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #00ff00 0%,#00c100 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #00ff00 0%,#00c100 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #00ff00 0%,#00c100 100%); /* IE10+ */
-  background: linear-gradient(top, #00ff00 0%,#00c100 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ff00', endColorstr='#00c100',GradientType=0 ); /* IE6-9 */
-}
-
-#butter-timeline .trackliner-event[butter-trackevent-type="image2"] {
-  background: #ff9900; /* Old browsers */
-  background: -moz-linear-gradient(top, #ff9900 0%, #c87800 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ff9900), color-stop(100%,#c87800)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #ff9900 0%,#c87800 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #ff9900 0%,#c87800 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #ff9900 0%,#c87800 100%); /* IE10+ */
-  background: linear-gradient(top, #ff9900 0%,#c87800 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff9900', endColorstr='#c87800',GradientType=0 ); /* IE6-9 */
-}
-
-#butter-timeline .trackliner-event[butter-trackevent-type="attribution2"] {
-  background: #0099ff; /* Old browsers */
-  background: -moz-linear-gradient(top, #0099ff 0%, #0078c8 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#0099ff), color-stop(100%,#0078c8)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #0099ff 0%,#0078c8 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #0099ff 0%,#0078c8 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #0099ff 0%,#0078c8 100%); /* IE10+ */
-  background: linear-gradient(top, #0099ff 0%,#0078c8 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0099ff', endColorstr='#0078c8',GradientType=0 ); /* IE6-9 */
-}
-
 
 #butter-timeline #butter-plugin {
   z-index: 2140000000;
@@ -831,16 +784,16 @@ THE SOFTWARE.
 	padding: 3px;
 	position: absolute;
 	right: 10px;
-	top: 92px;
-	height: 180px;
+	top: 55px;
+	height: 140px;
 	webkit-box-shadow: 0 1px 0 #656565;
 	width: 100px;
 }
 
 #butter-timeline .zoom-bar {
   position: absolute;
-  left: 5px;
-  bottom: 5px;
-  width: 102px;
+  top: 195px;
+  left: 10px;
+  width: 100px;
   height: 10px;
 }

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
+
 define( [ "core/logger", "core/eventmanager" ], function( Logger, EventManager ) {
 
   var urlRegex = /(?:http:\/\/www\.|http:\/\/|www\.|\.|^)(youtu|vimeo|soundcloud|baseplayer)/;
@@ -21,13 +25,13 @@ define( [ "core/logger", "core/eventmanager" ], function( Logger, EventManager )
 
     function addPopcornHandlers(){
       for( var eventName in _popcornEvents ){
-        _popcorn.listen( eventName, _popcornEvents[ eventName ] );
+        _popcorn.on( eventName, _popcornEvents[ eventName ] );
       } //for
     } //addPopcornHandlers
 
     function removePopcornHandlers(){
       for( var eventName in _popcornEvents ){
-        _popcorn.unlisten( eventName, _popcornEvents[ eventName ] );
+        _popcorn.off( eventName, _popcornEvents[ eventName ] );
       } //for
     } //removePopcornHandlers
 
@@ -73,6 +77,7 @@ define( [ "core/logger", "core/eventmanager" ], function( Logger, EventManager )
       } //timeoutWrapper
       function failureWrapper( e ){
         _interruptLoad = true;
+        _logger.log( e );
         _onFail( e );
       } //failureWrapper
       function popcornSuccess( e ){
@@ -159,27 +164,36 @@ define( [ "core/logger", "core/eventmanager" ], function( Logger, EventManager )
         popcornOptions = ", " + JSON.stringify( popcornOptions );
       } //if
 
+      if( typeof( target ) !== "string" ){
+        if( target.id ){
+          target = target.id;
+        }
+        else{
+          _logger.log( "WARNING: Unexpected non-string Popcorn target: " + target );
+        }
+      } //if
+
       var players = {
         "youtu": function() {
-          return "var popcorn = Popcorn.youtube( '" + _popcornTarget + "', '" +
+          return "var popcorn = Popcorn.youtube( '" + target + "', '" +
             url + "'" + popcornOptions + " );\n";
         },
         "vimeo": function() {
-          return "var popcorn = Popcorn.vimeo( '" + _popcornTarget + "', '" +
+          return "var popcorn = Popcorn.vimeo( '" + target + "', '" +
           url + "'" + popcornOptions + " );\n";
         },
         "soundcloud": function() {
-          return "var popcorn = Popcorn( Popcorn.soundcloud( '" + _popcornTarget + "'," +
+          return "var popcorn = Popcorn( Popcorn.soundcloud( '" + target + "'," +
           " '" + url + "') );\n";
         },
         "baseplayer": function() {
-          return "var popcorn = Popcorn( Popcorn.baseplayer( '#" + _popcornTarget + "'" + popcornOptions + " ) );\n";
+          return "var popcorn = Popcorn( Popcorn.baseplayer( '#" + target + "'" + popcornOptions + " ) );\n";
         },
         "object": function() {
-          return "var popcorn = Popcorn( '#" + _popcornTarget + "'" + popcornOptions + ");\n";
+          return "var popcorn = Popcorn( '#" + target + "'" + popcornOptions + ");\n";
         }
       };
-
+      
       // call certain player function depending on the regexResult
       popcornString += players[ _mediaType ]();
 
@@ -275,17 +289,22 @@ define( [ "core/logger", "core/eventmanager" ], function( Logger, EventManager )
         _logger.log( "Warning: tried to clear media with null target." );
         return;
       } //if
+      if( _popcorn ){
+        try{
+          removePopcornHandlers();
+          _popcorn.destroy();
+          _popcorn = undefined;
+        }
+        catch( e ){
+          _logger.log( "WARNING: Popcorn did NOT get destroyed properly: \n" + e.message + "\n" + e.stack );
+        } //try
+      } //if
       while( container.firstChild ) {
         container.removeChild( container.firstChild );
       } //while
       if ( [ "AUDIO", "VIDEO" ].indexOf( container.nodeName ) > -1 ) {
         container.currentSrc = "";
         container.src = "";
-      } //if
-      if( _popcorn ){
-        removePopcornHandlers();
-        _popcorn.destroy();
-        _popcorn = undefined;
       } //if
     }; //setMediaContent
 

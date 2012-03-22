@@ -1,26 +1,6 @@
-/**********************************************************************************
-
-Copyright (C) 2011 by Mozilla Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-**********************************************************************************/
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
 (function() {
   define( [
@@ -50,6 +30,7 @@ THE SOFTWARE.
           _duration = 0,
           _popcornOptions = mediaOptions.popcornOptions,
           _mediaUpdateInterval,
+          _view,
           _popcornWrapper = new PopcornWrapper( _id, {
             popcornEvents: {
               muted: function(){
@@ -135,16 +116,13 @@ THE SOFTWARE.
         return track;
       }; //addTrack
 
-      this.getTrack = function ( track ) {
-        for ( var i=0, l=_tracks.length; i<l; ++i ) {
-          if (  ( track.id !== undefined && _tracks[ i ].id === track.id ) ||
-                ( track.name && _tracks[ i ].name === track.name ) ||
-                _tracks[ i ] === track ) {
+      this.getTrackById = function( id ){
+        for( var i=0, l=_tracks.length; i<l; ++i ){
+          if( _tracks[ i ].id === id ){
             return _tracks[ i ];
           } //if
         } //for
-        return undefined;
-      }; //getTrack
+      }; //getTrackById
 
       this.removeTrack = function ( track ) {
         var idx = _tracks.indexOf( track );
@@ -171,6 +149,18 @@ THE SOFTWARE.
         } //if
       }; //removeTrack
 
+      this.findTrackWithTrackEventId = function( id ){
+        for( var i=0, l=_tracks.length; i<l; ++i ){
+          var te = _tracks[ i ].getTrackEventById( id );
+          if( te ){
+            return {
+              track: _tracks[ i ],
+              trackEvent: te
+            };
+          }
+        } //for
+      }; //findTrackWithTrackEventId
+
       this.getManifest = function( name ) {
         return _registry[ name ];
       }; //getManifest
@@ -184,11 +174,13 @@ THE SOFTWARE.
         } //if
         _pageElement = new PageElement( _target, {
           drop: function( event, ui ){
-            _em.dispatch( "trackeventrequested", {
-              event: event,
-              target: _this,
-              ui: ui
-            });
+            if( event.currentTarget === _this ) {
+              _em.dispatch( "trackeventrequested", {
+                event: event,
+                target: _this,
+                ui: ui
+              });
+            }//if
           }
         },
         {
@@ -205,6 +197,12 @@ THE SOFTWARE.
       } //play
 
       Object.defineProperties( this, {
+        view: {
+          enumerable: true,
+          get: function(){
+            return _view;
+          }
+        },
         url: {
           get: function() {
             return _url;

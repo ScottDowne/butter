@@ -1,5 +1,14 @@
+<!--  This Source Code Form is subject to the terms of the MIT license
+      If a copy of the MIT license was not distributed with this file, you can
+      obtain one at http://www.mozillapopcorn.org/butter-license.txt -->
+
 <html>
   <head>
+    <style>
+      p#message {
+        color: #FF0000;
+      }
+    </style>
     <script type="text/javascript" src="../src/dialog/dialog-comm.js"></script>
     <script type="text/javascript">
       (function(){
@@ -12,22 +21,26 @@
               okPressed,
               cancelPressed;
 
-          function sendData(){
+          function sendData( alsoClose ){
+            alsoClose = !!alsoClose; 
             var popcornOptions = {};
             for( var item in _manifest ) {
               popcornOptions[ item ] = document.getElementById( item ).value;
             }
-            _comm.send( "submit", popcornOptions);
+            document.getElementById( "message" ).innerHTML = "";
+            _comm.send( "submit", {
+              eventData: popcornOptions,
+              alsoClose: alsoClose
+            });
           } //sendData
 
           okPressed = function( e ) {
-            sendData();
-            _comm.send( "close" );
-          };
+            sendData( true );
+          }; //okPressed
 
           cancelPressed = function( e ) {
             _comm.send( "cancel" );
-          };
+          }; //cancelPressed
 
           document.addEventListener( "keydown", function( e ) {
             if( e.keyCode === 13 ) {
@@ -44,6 +57,12 @@
               var element = document.getElementById( item );
               element.value = e.data[ item ];
             } //for
+          });
+
+          _comm.listen( "trackeventupdatefailed", function( e ) {
+            if( e.data.error === "trackeventupdate::invalidtime" ){
+              document.getElementById( "message" ).innerHTML = "You've entered an invalid start or end time. Please verify that they are both greater than 0, the end time is equal to or less than the media's duration, and that the start time is less than the end time.";
+            } //if
           });
 
           _comm.listen( "trackeventdata", function( e ){
@@ -80,22 +99,26 @@
                       }
                     }
                     var option = document.createElement( "OPTION" );
-                    option.value = mediaName;
+                    option.value = "Media Element";
                     option.innerHTML =  mediaName;
                     select.appendChild( option );
-                    if( popcornOptions.target === mediaName ) {
-                        select.value = mediaName;
+                    if( popcornOptions.target === "Media Element" ) {
+                        select.value = "Media Element";
                     }
                     col2.appendChild( select );
 
-                    select.addEventListener( "change", sendData, false );
+                    select.addEventListener( "change", function( e ){
+                      sendData( false );
+                    }, false );
                   } else {
                     var newItem = document.createElement( elem );
                     newItem.id = item;
                     newItem.style.width = "100%";
                     newItem.value = popcornOptions[ item ];
                     col2.appendChild( newItem );
-                    newItem.addEventListener( "change", sendData, false );
+                    newItem.addEventListener( "change", function( e ){
+                      sendData( false );
+                    }, false );
                   }
 
                   row.appendChild( col1 );
@@ -113,5 +136,6 @@
     </table>
     <button id="ok">Ok</button>
     <button id="cancel">Cancel</button>
+    <p id="message"></p>
   </body>
 </html>

@@ -1,68 +1,28 @@
-/**********************************************************************************
-
-Copyright (C) 2012 by Mozilla Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-**********************************************************************************/
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
 (function () {
 
   define( [
-            "require",
-            "core/logger",
-            "core/eventmanager",
-            "core/target",
-            "core/media",
-            "core/page",
-            "editor/module",
-            "track/module",
-            "plugin/module",
-            "timeline/module",
-            "ui/module"
+            "./core/logger",
+            "./core/eventmanager",
+            "./core/target",
+            "./core/media",
+            "./core/page",
+            "./modules"
           ],
           function(
-            require,
             Logger,
             EventManager,
             Target,
             Media,
             Page,
-            EditorModule,
-            TrackModule,
-            PluginModule,
-            TimelineModule,
-            UIModule
-  ){
+            Modules
+          ){
 
-    var __modules = {
-      editor: EditorModule,
-      eventManager: EventManager,
-      track: TrackModule,
-      timeline: TimelineModule,
-      plugin: PluginModule,
-      ui: UIModule
-    }; //modules
-
-    var __guid = 0;
-
-    var __instances = [];
+    var __guid = 0,
+        __instances = [];
 
     var Butter = function( options ){
       return new ButterInit( options );
@@ -81,10 +41,10 @@ THE SOFTWARE.
           _em = new EventManager( this ),
           _page = new Page(),
           _config = {
-            modules: {},
             ui: {},
             icons: {}
           },
+          _defaultTarget,
           _this = this;
 
       function checkMedia() {
@@ -160,6 +120,9 @@ THE SOFTWARE.
         target.listen( "trackeventrequested", targetTrackEventRequested );
         _logger.log( "Target added: " + target.name );
         _em.dispatch( "targetadded", target );
+        if( target.isDefault ){
+          _defaultTarget = target;
+        } //if
         return target;
       }; //addTarget
 
@@ -174,6 +137,9 @@ THE SOFTWARE.
           _targets.splice( idx, 1 );
           delete _targets[ target.name ];
           _em.dispatch( "targetremoved", target );
+          if( _defaultTarget === target ){
+            _defaultTarget = undefined;
+          } //if
           return target;
         } //if
         return undefined;
@@ -366,6 +332,12 @@ THE SOFTWARE.
        * Properties
        ****************************************************************/
       Object.defineProperties( _this, {
+        defaultTarget: {
+          enumerable: true,
+          get: function(){
+            return _defaultTarget;
+          }
+        },
         config: {
           enumerable: true,
           get: function(){
@@ -491,14 +463,9 @@ THE SOFTWARE.
       } //if
 
       function readConfig(){
-        var modules = _config.modules,
-            icons = _config.icons,
+        var icons = _config.icons,
             img;
-        for( var moduleName in modules ){
-          if( modules.hasOwnProperty( moduleName ) && moduleName in __modules ){
-            _this[ moduleName ] = new __modules[ moduleName ]( _this, modules[ moduleName ] );
-          } //if
-        } //for
+
         for( var identifier in icons ){
           if( icons.hasOwnProperty( identifier ) ){
             img = document.createElement( "img" );
@@ -511,6 +478,8 @@ THE SOFTWARE.
             document.body.appendChild( img );
           } //if
         } //for
+
+        Modules( _this, _config );
 
         preparePage(function(){
           _em.dispatch( "ready", _this );
@@ -527,7 +496,12 @@ THE SOFTWARE.
         xhr.send( null );
 
         if( xhr.status === 200 || xhr.status === 0 ){
-          _config = JSON.parse( xhr.responseText ),
+          try{
+            _config = JSON.parse( xhr.responseText );
+          }
+          catch( e ){
+            throw new Error( "Butter config file not formatted properly." );
+          }
           readConfig();
         }
         else{

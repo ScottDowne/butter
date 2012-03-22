@@ -1,28 +1,8 @@
-/*********************************************************************************
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
-Copyright (C) 2011 by Mozilla Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-**********************************************************************************/
-
-define( [ "core/eventmanager", "dialog/iframe-dialog", "dialog/window-dialog" ], function( EventManager, IFrameDialog, WindowDialog ) {
+define( [ "core/eventmanager", "dialog/iframe-dialog", "dialog/window-dialog", "util/time" ], function( EventManager, IFrameDialog, WindowDialog, TimeUtil ) {
 
   var DEFAULT_DIMS = [ 400, 400 ],
       DEFAULT_FRAME_TYPE = "window";
@@ -42,6 +22,7 @@ define( [ "core/eventmanager", "dialog/iframe-dialog", "dialog/window-dialog" ],
           modal: "behind-timeline",
           url: source,
         },
+        _currentTarget,
         _this = this;
 
     _dims[ 0 ] = options.width || _dims[ 0 ];
@@ -65,8 +46,24 @@ define( [ "core/eventmanager", "dialog/iframe-dialog", "dialog/window-dialog" ],
         _dialog.send( "trackeventupdated", trackEvent.popcornOptions );
       } //onTrackEventUpdated
 
+      function blinkTarget(){
+        if( _currentTarget === "Media Element" ){
+          butter.currentMedia.view.blink();
+        }
+        else{
+          var target = butter.getTargetByType( "elementID", _currentTarget );
+          if( target ){
+            target.view.blink();
+          } //if
+        } //if
+      } //blinkTarget
+
+      function onTrackEventUpdateFailed( e ){
+        _dialog.send( "trackeventupdatefailed", e.data );
+      } //onTrackEventUpdateFailed
+
       _dialog.open({
-        open: function( e ) {
+        open: function( e ){
           var targets = [],
               media = {
                 name: butter.currentMedia.name,
@@ -75,19 +72,51 @@ define( [ "core/eventmanager", "dialog/iframe-dialog", "dialog/window-dialog" ],
           for( var i = 0, l = butter.targets.length; i < l; i++ ) {
             targets.push( butter.targets[ i ].element.id );
           }
+          var corn = trackEvent.popcornOptions;
           _dialog.send( "trackeventdata", {
             manifest: Popcorn.manifest[ trackEvent.type ],
-            popcornOptions: trackEvent.popcornOptions,
+            popcornOptions: corn,
             targets: targets,
             media: media
           });
+          _currentTarget = corn.target; 
+          blinkTarget();
           trackEvent.listen( "trackeventupdated", onTrackEventUpdated );
+          trackEvent.listen( "trackeventupdatefailed", onTrackEventUpdateFailed );
         },
-        submit: function( e ) {
-          trackEvent.update( e.data );
+        submit: function( e ){
+          var duration = TimeUtil.roundTime( butter.currentMedia.duration ),
+              popcornData = e.data.eventData,
+              alsoClose = e.data.alsoClose;
+          if( popcornData ){
+            popcornData.start = Number( popcornData.start );
+            popcornData.end = Number( popcornData.end );
+            if( isNaN( popcornData.start ) ||
+                isNaN( popcornData.end ) ||
+                popcornData.start < 0 ||
+                popcornData.end > duration ||
+                popcornData.start >= popcornData.end ){
+              trackEvent.dispatch( "trackeventupdatefailed", {
+                error: "trackeventupdate::invalidtime",
+                message: "Invalid start/end times.",
+                attemptedData: popcornData
+              });
+            }
+            else{
+              if( popcornData.target !== _currentTarget ){
+                _currentTarget = popcornData.target;
+                blinkTarget();
+              } //if
+              trackEvent.update( popcornData );
+              if( alsoClose ){
+                _dialog.close();
+              } //if
+            } //if
+          } //if
         },
         close: function( e ){
           trackEvent.unlisten( "trackeventupdated", onTrackEventUpdated );
+          trackEvent.unlisten( "trackeventupdatefailed", onTrackEventUpdateFailed );
         }
       });
     }; //open

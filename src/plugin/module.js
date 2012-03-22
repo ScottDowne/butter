@@ -1,39 +1,19 @@
-/**********************************************************************************
-
-Copyright (C) 2012 by Mozilla Foundation
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-**********************************************************************************/
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
 (function() {
 
   define( [ "core/logger", "core/eventmanager" ], function( Logger, EventManager ) {
 
-    var __numStyleSheets,
-        __trackEventCSSRules = {},
-        __cssRuleProperty = "butter-trackevent-type",
-        __cssRulePrefix = "#butter-timeline .trackliner-event",
+    var __trackEventCSSRules = {},
+        __cssRuleProperty = "data-butter-trackevent-type",
+        __cssRulePrefix = "#butter-timeline .butter-track-event",
         __newStyleSheet = document.createElement( "style" );
 
     __newStyleSheet.type = "text/css";
     __newStyleSheet.media = "screen";
+    __newStyleSheet.setAttribute( "data-butter-exclude", "true" );
 
     function colourHashFromType( type ){
       var hue = 0, saturation = 0, lightness = 0, srcString = type;
@@ -63,27 +43,6 @@ THE SOFTWARE.
       };
     } //colourHashFromType
 
-    function findTrackEventCSSRules(){
-      var sheets = document.styleSheets;
-      __numStyleSheets = sheets.length;
-      for( var i=0; i<sheets.length; ++i ){
-        var sheet = sheets[ i ];
-        if( sheet.href && sheet.href.indexOf( "jquery" ) > -1 ){
-          continue;
-        } //if
-        for( var j=0, l=sheet.cssRules.length; j<l; ++j ){
-          var rule = sheet.cssRules[ j ],
-              text = rule.selectorText,
-              idx = text.indexOf( __cssRuleProperty );
-          if( idx > -1 ){
-            var eIdx = text.indexOf( '"', idx + __cssRuleProperty.length + 2 ),
-                name = text.substring( idx + __cssRuleProperty.length + 2, eIdx );
-            __trackEventCSSRules[ name ] = rule;
-          } //if
-        } //for
-      } //for
-    } //findTrackEventCSSRules
-
     function createStyleForType( type ){
       var styleContent = __newStyleSheet.innerHTML,
           hash = colourHashFromType( type );
@@ -103,9 +62,6 @@ THE SOFTWARE.
           __pluginElementPrefix = "butter-plugin-",
           __pattern = '<li class="$type_tool ui-draggable"><a href="#" title="$type"><span></span>$type</a></li>';
 
-      if( __numStyleSheets !== document.styleSheets.length ){
-        findTrackEventCSSRules();
-      } //if
       document.head.appendChild( __newStyleSheet );
 
       var Plugin = function ( pluginOptions ) {
@@ -187,6 +143,7 @@ THE SOFTWARE.
           }
           pluginElement.id = __pluginElementPrefix + _this.type;
           helper = $( document.getElementById( _this.type + "-icon" ) || document.getElementById( "default-icon" ) );
+          pluginElement.setAttribute( "data-butter-plugin-type", _this.type );
           $( pluginElement ).draggable({
             helper: function() {
               var $div = $( "<div></div>" );
@@ -203,7 +160,7 @@ THE SOFTWARE.
             zIndex: 9999999999,
             revert: true,
             revertDuration: 0
-          });
+          }).data( "draggable-type", "plugin" );
           this.element = pluginElement;
           return pluginElement;
         }; //createElement
@@ -213,8 +170,11 @@ THE SOFTWARE.
       __container = document.createElement( "div" );
       __container.id = "butter-plugin";
 
-      //__container.className = "viewport enable-scroll";
-      document.getElementById( "butter-timeline" ).appendChild( __container );
+      this._start = function(){
+        if( butter.ui ){
+          butter.ui.element.appendChild( __container );
+        } //if
+      }; //start
 
       this.add = function( plugin, cb ) {
 
@@ -303,6 +263,8 @@ THE SOFTWARE.
         } //for
       }; //get
     }; //PluginManager
+
+    PluginManager.__moduleName = "plugin";
 
     return PluginManager;
 

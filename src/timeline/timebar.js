@@ -1,26 +1,6 @@
-/**********************************************************************************
-
-  Copyright (C) 2012 by Mozilla Foundation
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  THE SOFTWARE.
-
- **********************************************************************************/
+/* This Source Code Form is subject to the terms of the MIT license
+ * If a copy of the MIT license was not distributed with this file, you can
+ * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
 define( [ "util/lang", "./scrubber" ], function( util, Scrubber ) {
 
@@ -39,17 +19,16 @@ define( [ "util/lang", "./scrubber" ], function( util, Scrubber ) {
     _canvasContainer.appendChild( _canvas );
     _element.appendChild( _canvasContainer );
 
-    _tracksContainer.addEventListener( "scroll", function( e ){
-      _canvasContainer.scrollLeft = _tracksContainer.scrollLeft;
+    _tracksContainer.element.addEventListener( "scroll", function( e ){
+      _canvasContainer.scrollLeft = _tracksContainer.element.scrollLeft;
     }, false );
 
     _canvas.addEventListener( "mousedown", _scrubber.onMouseDown, false );
 
     this.update = function( zoom ) {
-      var tracklinerContainer = _tracksContainer.firstChild,
-          tracklinerWidth = tracklinerContainer.getBoundingClientRect().width;
+      var tracksContainerWidth = tracksContainer.container.getBoundingClientRect().width;
 
-      var width = Math.min( tracklinerWidth, _tracksContainer.scrollWidth );
+      var width = Math.min( tracksContainerWidth, _tracksContainer.container.scrollWidth );
 
       _canvas.style.width = width + "px";
 
