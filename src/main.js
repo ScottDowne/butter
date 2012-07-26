@@ -728,7 +728,7 @@
           readyCallback();
         }
       };
-
+// sometimes I dislike github
       function attemptDataLoad( finishedCallback ){
         var savedDataUrl;
 
