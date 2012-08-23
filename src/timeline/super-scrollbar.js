@@ -18,7 +18,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
 
   return function( outerElement, innerElement, zoomCallback, media ) {
     var _element = LangUtils.domFragment( SUPER_SCROLLBAR_LAYOUT ).querySelector( "#butter-super-scrollbar-container" ),
-        _rect, _zoom, _duration,
+        _rect, _duration,
         _media = media,
         // viewport is the draggable, resizable, representation of the viewable track container.
         _viewPort = _element.querySelector( "#butter-super-scrollbar-viewport" ),
@@ -27,16 +27,15 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
         // visuals is the container for the visual representations for track events.
         _visuals = _element.querySelector( "#butter-super-scrollbar-visuals" ),
         _scrubber = _element.querySelector( "#buter-super-scrollbar-scrubber" ),
-        _lastPosition = 0,
         _position = 0,
-        _leftPos = 0,
-        _rightPos = 0,
+        _offset = 0,
         _trackEventVisuals = {},
         _this = this;
 
     var onViewMouseUp, onViewMouseDown, onViewMouseMove,
         onLeftMouseUp, onLeftMouseDown, onLeftMouseMove,
-        onRightMouseUp, onRightMouseDown, onRightMouseMove;
+        onRightMouseUp, onRightMouseDown, onRightMouseMove,
+        updateView;
 
     this.update = function() {
       _rect = _element.getBoundingClientRect();
@@ -45,13 +44,6 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     // level is a value between 0 and 1, representing the percentage to zoom.
     this.zoom = function( level ) {
       _this.update();
-      // in the case of our viewport, we have to reverse the percentage.
-      var width = ( 1 - level ) * 100,
-          left = outerElement.scrollLeft / innerElement.offsetWidth * 100;
-      _zoom = level;
-      _viewPort.style.left = left + "%";
-      // another reversal.
-      _viewPort.style.right = 100 - ( width + left ) + "%";
       zoomCallback( level );
     };
 
@@ -65,6 +57,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     onLeftMouseUp = function( e ) {
       e.preventDefault();
       e.stopPropagation();
+      outerElement.addEventListener( "scroll", updateView, false );
       window.removeEventListener( "mouseup", onLeftMouseUp, false );
       window.removeEventListener( "mousemove", onLeftMouseMove, false );
     };
@@ -72,6 +65,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     onRightMouseUp = function( e ) {
       e.preventDefault();
       e.stopPropagation();
+      outerElement.addEventListener( "scroll", updateView, false );
       window.removeEventListener( "mouseup", onRightMouseUp, false );
       window.removeEventListener( "mousemove", onRightMouseMove, false );
     };
@@ -79,7 +73,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     onViewMouseDown = function( e ) {
       e.preventDefault();
       e.stopPropagation();
-      _lastPosition = e.clientX;
+      _offset = e.clientX - _rect.left - _viewPort.offsetLeft;
       window.addEventListener( "mouseup", onViewMouseUp, false );
       window.addEventListener( "mousemove", onViewMouseMove, false );
     };
@@ -87,6 +81,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     onLeftMouseDown = function( e ) {
       e.preventDefault();
       e.stopPropagation();
+      outerElement.removeEventListener( "scroll", updateView, false );
       window.addEventListener( "mouseup", onLeftMouseUp, false );
       window.addEventListener( "mousemove", onLeftMouseMove, false );
     };
@@ -94,34 +89,15 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     onRightMouseDown = function( e ) {
       e.preventDefault();
       e.stopPropagation();
+      outerElement.removeEventListener( "scroll", updateView, false );
       window.addEventListener( "mouseup", onRightMouseUp, false );
       window.addEventListener( "mousemove", onRightMouseMove, false );
     };
 
     onViewMouseMove = function( e ) {
-
       e.preventDefault();
       e.stopPropagation();
-
-      // leftPos is from the left of the container, to the left of the viewport.
-      _leftPos = ( _viewPort.getBoundingClientRect().left + e.clientX - _lastPosition ) - _rect.left;
-      // rightPos is from the right of the container, to the right of the viewport.
-      _rightPos = _rect.width - ( ( ( _viewPort.getBoundingClientRect().left + e.clientX - _lastPosition ) - _rect.left ) + _viewPort.offsetWidth );
-
-      // make sure we never go out of bounds.
-      if ( _leftPos < 0 ) {
-        _leftPos = 0;
-        _rightPos = _rect.width - _viewPort.offsetWidth;
-      }
-      if ( _rightPos < 0 ) {
-        _rightPos = 0;
-        _leftPos = _viewPort.offsetLeft;
-      }
-
-      _viewPort.style.right = _rightPos / _rect.width * 100 + "%";
-      _viewPort.style.left = _leftPos / _rect.width * 100 + "%";
-      outerElement.scrollLeft = _viewPort.offsetLeft / _rect.width * innerElement.scrollWidth;
-      _lastPosition = e.clientX;
+      outerElement.scrollLeft = ( e.clientX - _rect.left - _offset ) / _rect.width * innerElement.scrollWidth;
     };
 
     onLeftMouseMove = function( e ) {
@@ -130,7 +106,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
       e.stopPropagation();
 
       // position is from the left of the container, to the left of the viewport.
-      _position = ( e.clientX - _rect.left );
+      _position = e.clientX - _rect.left;
 
       // make sure we never go out of bounds.
       if ( _position < 0 ) {
@@ -161,10 +137,16 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
       }
 
       _viewPort.style.right = _position / _rect.width * 100 + "%";
-      outerElement.scrollLeft = _viewPort.offsetLeft / _rect.width * innerElement.scrollWidth;
       zoomCallback( _viewPort.offsetWidth / _rect.width );
+      outerElement.scrollLeft = _viewPort.offsetLeft / _rect.width * innerElement.scrollWidth;
     };
 
+    updateView = function() {
+      _viewPort.style.left = outerElement.scrollLeft / innerElement.offsetWidth * 100 + "%";
+      _viewPort.style.right = ( 1 - ( outerElement.scrollLeft + _element.offsetWidth ) / innerElement.offsetWidth ) * 100 + "%";
+    };
+
+    outerElement.addEventListener( "scroll", updateView, false );
     _viewPort.addEventListener( "mousedown", onViewMouseDown, false );
     _leftHandle.addEventListener( "mousedown", onLeftMouseDown, false );
     _rightHandle.addEventListener( "mousedown", onRightMouseDown, false );
@@ -217,11 +199,8 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     });
 
     _media.listen( "mediaready", function( e ) {
-      var width = ( 1 - _zoom ) * 100,
-          left = outerElement.scrollLeft / innerElement.offsetWidth * 100;
       _duration = e.target.duration;
-      _viewPort.style.left = left + "%";
-      _viewPort.style.right = 100 - ( width + left ) + "%";
+      updateView();
     });
 
     Object.defineProperties( this, {
