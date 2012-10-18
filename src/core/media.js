@@ -402,17 +402,8 @@
             end = trackEventOptions.end;
             // check if track event if out of bounds
             if ( end > _duration  ) {
-              start = _duration - ( end - start );
-              // if start is negative, we now have a track event longer than the duration
-              if ( start < 0 ) {
-                // setting this to zero makes it the duration
-                start = 0;
-              }
-              // fix broken track event
-              trackEvent.update({
-                start: start,
-                end: _duration
-              });
+              // remove offending track event
+              trackEvent.track.removeTrackEvent( trackEvent );
             }
           }
         }
