@@ -64,6 +64,11 @@
         "icon": "{{baseDir}}templates/assets/plugins/pausePlugin/pause-icon.png"
       },
       {
+        "type": "html5Player",
+        "displayName": "html5 Player",
+        "path": "{{baseDir}}templates/assets/plugins/html5Player/popcorn.html5Player.js"
+      },
+      {
         "type": "wikipedia",
         "path": "{{baseDir}}templates/assets/plugins/wikipedia/popcorn.wikipedia.js",
         "icon": "{{baseDir}}templates/assets/plugins/wikipedia/wikipedia-icon.png"

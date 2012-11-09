@@ -1,0 +1,14 @@
+.html5-player {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+}
+
+.html5-player-on {
+  display: block;
+}
+
+.html5-player-off {
+  display: none;
+}
