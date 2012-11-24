@@ -67,6 +67,16 @@
         "type": "wikipedia",
         "path": "{{baseDir}}templates/assets/plugins/wikipedia/popcorn.wikipedia.js",
         "icon": "{{baseDir}}templates/assets/plugins/wikipedia/wikipedia-icon.png"
+      },
+      {
+        "type": "loudness",
+        "displayName": "Volume",
+        "path": "{{baseDir}}templates/assets/plugins/popcorn-base/popcorn.loudness.js"
+      },
+      {
+        "type": "inception",
+        "displayName": "Video",
+        "path": "{{baseDir}}templates/assets/plugins/popcorn-base/popcorn.inception.js"
       }
     ],
     "defaults": [
@@ -78,7 +88,9 @@
       "wikipedia",
       "loopPlugin",
       "pausePlugin",
-      "skip"
+      "skip",
+      "loudness",
+      "inception"
     ]
   },
   "player": {
