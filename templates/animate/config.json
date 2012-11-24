@@ -1,0 +1,28 @@
+{
+  "name": "animate",
+  "template": "index.html",
+  "baseDir": "../../",
+  "savedDataUrl": "saved-data.json",
+  "editor": {
+    "loudness": "{{baseDir}}templates/assets/editors/loudness/loudness-editor.js"
+  },
+  "plugin": {
+    "defaults": [
+      "loudness",
+      "inception"
+    ],
+    "plugins": [
+      {
+        "type": "loudness",
+        "displayName": "Volume",
+        "path": "{{baseDir}}templates/assets/plugins/popcorn-base/popcorn.loudness.js"
+      },
+      {
+        "type": "inception",
+        "displayName": "Video",
+        "path": "{{baseDir}}templates/assets/plugins/popcorn-base/popcorn.inception.js"
+      }
+    ]
+  },
+  "maxPluginZIndex": 1000
+}

@@ -1,0 +1,71 @@
+{
+    "targets": [{
+        "id": "Target0",
+        "name": "video-container",
+        "element": "video-container"
+    }],
+    "media": [{
+        "id": "Media0",
+        "name": "Media0",
+        "url": [
+          "#t=0,60"
+        ],
+        "target": "video",
+        "duration": 60,
+        "controls": false,
+        "tracks": [{
+            "name": "Layer 0",
+            "id": "0",
+            "trackEvents": [{
+                "id": "TrackEvent0",
+                "type": "inception",
+                "popcornOptions": {
+                    "start": 0,
+                    "end": 4,
+                    "source": "http://videos.mozilla.org/serv/webmademovies/atultroll.webm",
+                    "target": "video-container"
+                },
+                "track": "0",
+                "name": "TrackEvent0"
+            }, {
+                "id": "TrackEvent1",
+                "type": "inception",
+                "popcornOptions": {
+                    "start": 4,
+                    "end": 8,
+                    "source": "http://videos.mozilla.org/serv/webmademovies/haiti.webm",
+                    "target": "video-container"
+                },
+                "track": "0",
+                "name": "TrackEvent1"
+            }]
+        }, {
+            "name": "Layer 1",
+            "id": "4",
+            "trackEvents": [{
+                "id": "TrackEvent3",
+                "type": "loudness",
+                "popcornOptions": {
+                    "start": 0,
+                    "end": 10,
+                    "volume": {
+                        "from": 0,
+                        "to": 1
+                    }
+                },
+                "track": "0",
+                "name": "TrackEvent3"
+            }]
+        }, {
+            "name": "Layer 2",
+            "id": "1",
+            "trackEvents": []
+        }, {
+            "name": "Layer 3",
+            "id": "3",
+            "trackEvents": []
+        }]
+    }],
+    "name": "My new project",
+    "template": "animate"
+}
