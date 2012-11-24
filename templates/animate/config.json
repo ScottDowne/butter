@@ -4,14 +4,35 @@
   "baseDir": "../../",
   "savedDataUrl": "saved-data.json",
   "editor": {
+    "popup": "{{baseDir}}templates/assets/editors/popup/popup-editor.js",
+    "image": "{{baseDir}}templates/assets/editors/image/image-editor.js",
+    "text": "{{baseDir}}templates/assets/editors/text/text-editor.js",
     "loudness": "{{baseDir}}templates/assets/editors/loudness/loudness-editor.js"
   },
   "plugin": {
     "defaults": [
       "loudness",
-      "inception"
+      "inception",
+      "popup",
+      "text",
+      "image"
     ],
     "plugins": [
+      {
+        "type": "popup",
+        "displayName": "Pop",
+        "path": "{{baseDir}}templates/assets/plugins/popup/popcorn.popup.js"
+      },
+      {
+        "type": "text",
+        "displayName": "Text",
+        "path": "{{baseDir}}templates/assets/plugins/text/popcorn.text.js"
+      },
+      {
+        "type": "image",
+        "displayName": "Image",
+        "path": "{{baseDir}}templates/assets/plugins/image/popcorn.image.js"
+      },
       {
         "type": "loudness",
         "displayName": "Volume",
