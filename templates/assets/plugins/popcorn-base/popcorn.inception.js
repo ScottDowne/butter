@@ -35,6 +35,7 @@
 	}
 
 	Popcorn.basePlugin('inception', function (options, base) {
+console.log( "setup" );
 		var me = this,
 			popcorn,
 			media,
@@ -89,6 +90,7 @@
 		}
 
 		function mainVideoPaused() {
+console.log( "paused event" );
 			popcorn.pause();
 		}
 
@@ -187,6 +189,7 @@
 		mediaType = options.type || guessMediaType(sources) || '';
 		mediaType = mediaType.toLowerCase();
 		if (mediaType !== 'video' && mediaType !== 'audio' && Popcorn.smart) {
+console.log( "making new smart" );
 			popcorn = Popcorn.smart(div, sources, popcornOptions);
 			media = popcorn.media;
 		} else {
@@ -199,7 +202,6 @@
 				if (to < Infinity) {
 					url += ',' + to;
 				}
-
 				source.setAttribute('src', url);
 				media.appendChild(source);
 			});
@@ -349,16 +351,22 @@
 		},
 		options: {
 			start: {
-				elem: "input",
-				type: "number",
+				/*elem: "input",
+				type: "seconds",
 				label: "Start",
-				units: "seconds"
+				units: "seconds"*/
+				elem: "input",
+				type: "seconds",
+				label: "Start"
 			},
 			end: {
-				elem: "input",
-				type: "number",
+/*				elem: "input",
+				type: "seconds",
 				label: "End",
-				units: "seconds"
+				units: "seconds"*/
+				elem: "input",
+				type: "seconds",
+				label: "End"
 			},
 			source: {
 				elem: "input",
@@ -399,7 +407,7 @@
 			},
 			from: {
 				elem: "input",
-				type: "number",
+				type: "seconds",
 				label: "In",
 				"default": 0
 			},
@@ -407,7 +415,8 @@
 				elem: "input",
 				type: "number",
 				label: "Out",
-				"default": 10
+				"default": Infinity,
+        hidden: true
 			},
 			volume: {
 				elem: "input",

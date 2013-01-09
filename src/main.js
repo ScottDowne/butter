@@ -194,6 +194,7 @@
       }
 
       function mediaPlayerTypeRequired( e ){
+console.log( e.data );
         _page.addPlayerType( e.data );
       }
 
@@ -366,6 +367,11 @@
 
         media.listen( "trackeventrequested", mediaTrackEventRequested );
         media.listen( "mediaplayertyperequired", mediaPlayerTypeRequired );
+
+        // Lazy hack to make it work because I couldn't otherwise. Kept hitting wtf walls trying to load media script. It is like a fortress.
+        for ( var i = 0; i < _config.value( "player" ).defaults.length; i++ ) {
+          _page.addPlayerType( _config.value( "player" ).defaults[ i ] );
+        }
 
         _this.dispatch( "mediaadded", media );
         if ( !_currentMedia ) {

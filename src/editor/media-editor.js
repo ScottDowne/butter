@@ -2,8 +2,8 @@
  * If a copy of the MIT license was not distributed with this file, you can
  * obtain one at https://raw.github.com/mozilla/butter/master/LICENSE */
 
-define( [ "util/lang", "util/uri", "util/keys", "editor/editor", "text!layouts/media-editor.html" ],
-  function( LangUtils, URI, KeysUtils, Editor, EDITOR_LAYOUT ) {
+define( [ "util/lang", "util/uri", "util/time", "util/keys", "editor/editor", "text!layouts/media-editor.html" ],
+  function( LangUtils, URI, Time, KeysUtils, Editor, EDITOR_LAYOUT ) {
 
   var MAX_MEDIA_INPUTS = 4;
 
@@ -34,6 +34,11 @@ define( [ "util/lang", "util/uri", "util/keys", "editor/editor", "text!layouts/m
 
       // Don't bother with empty strings
       if ( url ) {
+        // if a url is just a duration, create a media fragment.
+        url = Time.toSeconds( url );
+        if ( /^\d+$/.test( url ) ) {
+          url = "#t=," + url;
+        }
         newMediaArr.push( url );
       }
     }
@@ -51,9 +56,9 @@ define( [ "util/lang", "util/uri", "util/keys", "editor/editor", "text!layouts/m
         altMediaLabel,
         deleteBtn,
         oldValue = "";
-
-      urlInput.value = url;
-
+      if ( /^#t=\d*,\d+/.test( url ) ) {
+        urlInput.value = Time.toTimecode( url.split( "," )[ 1 ] );
+      }
       function checkInputMax() {
         if ( _inputCount >= MAX_MEDIA_INPUTS ) {
           _addAlternateSourceBtn.classList.add( "butter-disabled" );
