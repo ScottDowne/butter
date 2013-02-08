@@ -184,7 +184,12 @@
           if ( track && track.constructor === Array ) {
             position = track;
           }
-          track = _currentMedia.findNextAvailableTrackFromTimes( start, end );
+          track = _currentMedia.orderedTracks[ 0 ];
+          if ( track ) {
+            if ( track.findOverlappingTrackEvent( start, end ) ) {
+              track = _currentMedia.insertTrackBefore( track );
+            }
+          }
         } else {
           track = _currentMedia.forceEmptyTrackSpaceAtTime( track, start, end );
         }
