@@ -171,6 +171,24 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     }
   }
 
+  function addExistingClips( tracks ) {
+    var track, trackEvent, trackEvents,
+        popcornOptions;
+
+    for ( var i = 0; i < tracks.length; i++ ) {
+      track = tracks[ i ];
+      trackEvents = track.trackEvents;
+
+      for ( var k = 0; trackEvents && k < trackEvents.length; k++ ) {
+        trackEvent = trackEvents[ i ];
+
+        if ( trackEvent && trackEvent.type === "sequencer" ) {
+          MediaUtils.getMetaData( trackEvent.popcornOptions.source[ 0 ], onSuccess );
+        }
+      }
+    }
+  }
+
   function setup() {
     _addMediaTitle.addEventListener( "click", toggleAddNewMediaPanel, false );
 
@@ -186,6 +204,8 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
       e.preventDefault();
       setBaseDuration( _durationInput.value );
     }, false );
+
+    addExistingClips( _butter.currentMedia.tracks );
   }
 
   function onDurationChange( e ) {
