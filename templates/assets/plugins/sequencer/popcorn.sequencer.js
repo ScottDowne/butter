@@ -22,16 +22,7 @@
     return quarantine;
   }
 
-  var MEDIA_LOAD_TIMEOUT = 10000,
-      // This is slack we have for a seek.
-      // Higher this is, the longer out of sync we'll accept a clip.
-      // 0 forces seeks to wait.
-      // When one clip changes over to another, there is a moment where the video needs to play.
-      // We can assume this is going to be fast enough in most cases.
-      // If the seek doesn't finish in this time, we pause the video to continue to wait.
-      // This means in best cases our sequence is smooth, but slightly out of sync,
-      // In worst cases it pauses.
-      WAIT_FOR_SEEK_BEFORE_PAUSE = 350;
+  var MEDIA_LOAD_TIMEOUT = 10000;
  
   Popcorn.plugin( "sequencer", {
     _setup: function( options ) {
@@ -93,7 +84,7 @@
         if ( options.ready && !options.denied ) {
           return;
         }
-        _this.off( "play", options._surpressPlayEvent );
+        _this.off( "play", options._playWhenReadyEvent );
         options.failed = true;
         options.hideLoading();
         if ( !options.hidden && options.active ) {
@@ -125,7 +116,7 @@
       };
 
       options.clearEvents = function() {
-        _this.off( "play", options._surpressPlayEvent );
+        _this.off( "play", options._playWhenReadyEvent );
         _this.off( "play", options._playEvent );
         _this.off( "pause", options._pauseEvent );
         _this.off( "seeked", options._seekedEvent );
@@ -166,7 +157,6 @@
       }
 
       options._startEvent = function() {
-        var seekTimeout;
         // wait for this seek to finish before displaying it
         // we then wait for a play as well, because youtube has no seek event,
         // but it does have a play, and won't play until after the seek.
@@ -174,12 +164,9 @@
         var seekedEvent = function () {
           var playedEvent = function() {
             // We've managed to seek, clear any pause fallbacks.
-            clearTimeout( seekTimeout );
+            //clearTimeout( seekTimeout );
             options.p.off( "play", playedEvent );
-            // video element can be clicked on. Keep them in sync with the main timeline.
-            options.p.on( "play", options._seqPlayEvent );
-            options.p.on( "pause", options._seqPauseEvent );
-            _this.off( "play", options._surpressPlayEvent );
+            _this.off( "play", options._playWhenReadyEvent );
             _this.on( "play", options._playEvent );
             _this.on( "pause", options._pauseEvent );
             _this.on( "seeked", options._seekedEvent );
@@ -191,8 +178,10 @@
             }
             if ( options.playWhenReady ) {
               _this.play();
+              options.p.on( "pause", options._seqPauseEvent );
             } else {
               options.p.pause();
+              options.p.on( "play", options._seqPlayEvent );
             }
             if ( options.active ) {
               options._volumeEvent();
@@ -203,16 +192,21 @@
           options.p.play();
         };
         options.p.on( "seeked", seekedEvent);
-        // assume the seek is fast, but if not, pause the main video and wait.
-        seekTimeout = setTimeout( function() {
-          _this.pause();
-        }, WAIT_FOR_SEEK_BEFORE_PAUSE );
         options.p.currentTime( _this.currentTime() - options.start + (+options.from) );
       };
 
-      options._surpressPlayEvent = function() {
+      options._playWhenReadyEvent = function() {
         options.playWhenReady = true;
-        _this.pause();
+      };
+
+      options._seqPlayEvent = function() {
+        if ( _this.paused() ) {
+          setTimeout( function() {
+            options.p.off( "play", options._seqPlayEvent );
+            _this.play();
+            options.p.on( "pause", options._seqPauseEvent );
+          }, 0 );
+        }
       };
 
       options._playEvent = function() {
@@ -221,27 +215,19 @@
         }
       };
 
-      options._seqPlayEvent = function() {
-        // Ensure the player is not already in this state.
-        // This essentially tests if the play call
-        // happened from youtube UI and not popcorn maker UI.
-        if ( _this.paused() ) {
-          _this.play();
+      options._seqPauseEvent = function() {
+        if ( !_this.paused() ) {
+          setTimeout( function() {
+            options.p.off( "pause", options._seqPauseEvent );
+            _this.pause();
+            options.p.on( "play", options._seqPlayEvent );
+          }, 0 );
         }
       };
 
       options._pauseEvent = function() {
         if ( !options.p.paused() ) {
           options.p.pause();
-        }
-      };
-
-      options._seqPauseEvent = function() {
-        // Ensure the player is not already in this state.
-        // This essentially tests if the play call
-        // happened from youtube UI and not popcorn maker UI.
-        if ( !_this.paused() ) {
-          _this.pause();
         }
       };
 
@@ -326,7 +312,7 @@
           options.clearEvents();
           options.tearDown();
           options.setupContainer();
-          this.on( "play", options._surpressPlayEvent );
+          this.on( "play", options._playWhenReadyEvent );
           if ( !this.paused() ) {
             options.playWhenReady = true;
             this.pause();
@@ -377,7 +363,7 @@
           options._container.style.zIndex = +options.zindex;
           return;
         }
-        this.on( "play", options._surpressPlayEvent );
+        this.on( "play", options._playWhenReadyEvent );
         if ( !this.paused() ) {
           options.playWhenReady = true;
           options.p.pause();
