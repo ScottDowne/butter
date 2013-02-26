@@ -35,6 +35,7 @@
           _duration = -1,
           _popcornOptions = mediaOptions.popcornOptions,
           _mediaUpdateInterval,
+          _clipData = {},
           _this = this,
           _popcornWrapper = new PopcornWrapper( _id, {
             popcornEvents: {
@@ -493,10 +494,15 @@
             _popcornWrapper.muted = val;
           }
         },
-        ready:{
+        ready: {
           enumerable: true,
           get: function(){
             return _ready;
+          }
+        },
+        clipData: {
+          get: function() {
+            return _clipData;
           }
         },
         name: {
@@ -569,7 +575,8 @@
               target: _target,
               duration: _duration,
               controls: _popcornWrapper.popcorn ? _popcornWrapper.popcorn.controls() : false,
-              tracks: exportJSONTracks
+              tracks: exportJSONTracks,
+              clipData: _clipData
             };
           },
           set: function( importData ){
@@ -587,6 +594,9 @@
             if ( importData.duration >= 0 ) {
               _duration = importData.duration;
               _this.url = "#t=," + _duration;
+            }
+            if ( importData.clipData ) {
+              _clipData = importData.clipData;
             }
             if( importData.tracks ){
               var importTracks = importData.tracks;

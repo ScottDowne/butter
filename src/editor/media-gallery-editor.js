@@ -25,7 +25,9 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
 
       _butter,
       _media,
-      _this;
+      _this,
+      _initialLoad = true,
+      _guid = 0;
 
   function toggleAddNewMediaPanel() {
     _parentElement.classList.toggle( "add-media-collapsed" );
@@ -64,11 +66,12 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     }
   }
 
-  function onSuccess( data ) {
+  function onSuccess( data, ignoreClipAdd ) {
     var el = _GALLERYITEM.cloneNode( true ),
         deleteBtn = el.querySelector( ".mg-delete-btn" ),
         thumbnailBtn = el.querySelector( ".mg-thumbnail" ),
-        thumbnailImg;
+        thumbnailImg,
+        id = _guid++;
 
     DragNDrop.helper( thumbnailBtn, {
       pluginOptions: {
@@ -81,8 +84,13 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
       }
     });
 
+    if ( !ignoreClipAdd ) {
+      _media.clipData[ id ] = data;
+    }
+
     thumbnailBtn.setAttribute( "data-popcorn-plugin-type", "sequencer" );
     thumbnailBtn.setAttribute( "data-butter-draggable-type", "plugin" );
+    deleteBtn.setAttribute( "data-butter-media-clip", id );
 
     _loadingSpinner.classList.add( "hidden" );
 
@@ -144,9 +152,13 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
 
     thumbnailBtn.addEventListener( "click", addEvent, false );
 
-    deleteBtn.addEventListener( "click", function() {
+    deleteBtn.addEventListener( "click", function( e ) {
+      var id = e.target.getAttribute( "data-butter-media-clip" );
+
       thumbnailBtn.removeEventListener( "click", addEvent, false );
       _galleryList.removeChild( el );
+
+      delete _media.clipData[ id ];
     }, false );
 
     _galleryList.insertBefore( el, _galleryList.firstChild );
@@ -191,6 +203,8 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
   }
 
   function setup() {
+    var clips = _media.clipData;
+
     _addMediaTitle.addEventListener( "click", toggleAddNewMediaPanel, false );
 
     _urlInput.addEventListener( "focus", onFocus, false );
@@ -202,6 +216,18 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
 
     _durationInput.addEventListener( "keydown", onDurationChange, false );
     _durationInput.addEventListener( "blur", onBlur, false );
+
+    if ( _initialLoad ) {
+      _initialLoad = false;
+
+      // We keep track of clips that are in the media gallery for a project once it is saved
+      // and every time after it is saved.
+      for ( var key in clips ) {
+        if ( clips.hasOwnProperty( key ) ) {
+          onSuccess( clips[ key ], true );
+        }
+      }
+    }
   }
 
   function onDurationChange( e ) {
@@ -215,13 +241,12 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     rootElement = _parentElement;
     _this = this;
     _butter = butter;
+    _media = _butter.currentMedia;
 
     setup();
 
     Editor.BaseEditor.extend( _this, butter, rootElement, {
       open: function() {
-        _media = butter.currentMedia;
-
         setBaseDuration( _media.duration );
       },
       close: function() {}
