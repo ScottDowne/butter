@@ -109,6 +109,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
       projectJSON.publishUrl = utils.generatePublishUrl( doc.id );
       projectJSON.iframeUrl = utils.generateIframeUrl( doc.id );
       projectJSON.remixedFrom = doc.remixedFrom;
+      projectJSON.remixUrl = utils.generateIframeUrl( doc.remixedFrom );
       res.json( projectJSON );
     });
   });
@@ -134,6 +135,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
       projectJSON.name = "Remix of " + project.name;
       projectJSON.template = project.template;
       projectJSON.remixedFrom = project.id;
+      projectJSON.remixUrl = utils.generatePublishUrl( project.id );
 
       res.json( projectJSON );
       metrics.increment( 'user.remix' );
