@@ -71,6 +71,20 @@ body {
   height: 100%;
 }
 
+.project-thumbnail {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  display: block;
+  // Ensures thumbnail appears above all trackevents
+  z-index: 1000;
+
+  &.hidden {
+    display: none;
+  }
+}
+
 .embed-overlay {
   background: rgba( 255, 255, 255, 0.95 );
   color: #676867;
