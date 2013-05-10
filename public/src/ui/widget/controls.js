@@ -423,7 +423,7 @@ define( [ "util/lang", "util/time", "text!layouts/controls.html" ],
 
     // If we're not autoPlay, wait for user interaction before we're ready.
     if ( !options.preload ) {
-      bigPlayButton.addEventListener( "click", onInit, false );
+      document.addEventListener( "click", onInit, false );
     } else {
       bigPlayButton.addEventListener( "click", bigPlayClicked, false );
       p.media.addEventListener( "play", bigPlayClicked, false );

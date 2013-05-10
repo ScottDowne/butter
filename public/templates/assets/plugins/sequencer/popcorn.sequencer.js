@@ -57,7 +57,11 @@
           bigPlay.classList.add( "hide-button" );
         }
         document.querySelector( ".loading-message" ).classList.add( "show-media" );
-        document.querySelector( ".project-thumbnail" ).classList.add( "hidden" );
+        
+        if ( document.querySelector( ".project-thumbnail" ) ) {
+          document.querySelector( ".project-thumbnail" ).classList.add( "hidden" );
+        }
+
       };
       options.hideLoading = function() {
         var bigPlay = document.getElementById( "controls-big-play-button" );
