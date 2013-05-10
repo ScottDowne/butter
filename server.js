@@ -8,7 +8,6 @@ var express = require('express'),
     path = require('path'),
     jade = require('jade'),
     app = express(),
-    habitat = require('habitat'),
     lessMiddleware = require('less-middleware'),
     requirejsMiddleware = require( 'requirejs-middleware' ),
     config = require( './lib/config' ),
@@ -24,8 +23,6 @@ var express = require('express'),
     WWW_ROOT = path.resolve( __dirname, config.dirs.wwwRoot ),
     VALID_TEMPLATES = config.templates;
 
-habitat.load();
-
   var MakeAPI = require('makeapi'),
       make;
 
@@ -36,8 +33,7 @@ habitat.load();
 
 
 var templateConfigs = {},
-    nunjucksEnv = new nunjucks.Environment(new nunjucks.FileSystemLoader('views')),
-    env = new habitat();
+    nunjucksEnv = new nunjucks.Environment(new nunjucks.FileSystemLoader('views'));
 
 nunjucksEnv.express(app);
 
