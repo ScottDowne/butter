@@ -16,6 +16,7 @@ var express = require('express'),
     filter,
     sanitizer = require( './lib/sanitizer' ),
     FileStore = require('./lib/file-store.js'),
+    nunjucks = require('nunjucks'),
     metrics,
     utils,
     stores = {},
@@ -25,8 +26,20 @@ var express = require('express'),
 
 habitat.load();
 
+  var MakeAPI = require('makeapi'),
+      make;
+
+  make = MakeAPI({
+    apiURL: config.MAKE_ENDPOINT,
+    auth: config.MAKE_AUTH
+  });
+
+
 var templateConfigs = {},
+    nunjucksEnv = new nunjucks.Environment(new nunjucks.FileSystemLoader('views')),
     env = new habitat();
+
+nunjucksEnv.express(app);
 
 function readTemplateConfig( templateName, templatedPath ) {
   var configPath = templatedPath.replace( '{{templateBase}}', config.dirs.templates + '/' );
@@ -392,6 +405,52 @@ app.get( '/dashboard', filter.isStorageAvailable, function( req, res ) {
     });
   });
 });
+
+var makeMiddle = {
+  search: function( data, callback ) {
+      if (data.url) {
+        make.find({url: data.url}).email(data.email).then(callback);
+      } else if (data.contentType) {
+        make.find({contentType: data.contentType}).email(data.email).limit(100).then(callback);
+      } else {
+        make.email(data.email).limit(100).then(callback);
+      }
+  }
+};
+
+app.get('/myprojects',
+  function(req, res) {
+    makeMiddle.search({email: req.session.email}, function(err, results) {
+      var projects = {
+            "popcorn": [],
+            "thimble": []
+          },
+          type, url;
+      if (results && results.hits) {
+        for ( var i = 0; i < results.hits.length; i++ ) {
+          type = results.hits[ i ].contentType;
+          if ( !type ) {
+            continue;
+          }
+          type = type.split( "application/x-" );
+          if ( !type[ 1 ] ) {
+            continue;
+          }
+          type = type[ 1 ];
+          url = results.hits[ i ].url;
+          projects[ type ].push({
+            title: results.hits[ i ].title || url,
+            edit: url + "/edit",
+            type: type,
+            view: url
+          });
+        }
+      }
+
+      res.render('myProjects.html', {title: 'User Projects', projects: projects});
+    });
+  }
+);
 
 app.get( '/external/make-api.js', function( req, res ) {
   res.sendfile( "node_modules/makeapi/public/js/make-api.js" );
